@@ -1,11 +1,15 @@
-using Plots
 using Random
 using Distributions
-
+using CSV
+using DataFrames
+using Plots
 
 # data = [randn((1,6)); randn((1,6))]
-data =  [2.5 3 3 3.5 5.5 6 6 6.5; 3.5 3 4 3.5 5.5 6 5 5.5]
-println(data)
+# data =  [2.5 3 3 3.5 5.5 6 6 6.5 4.5; 3.5 3 4 3.5 5.5 6 5 5.5 4.5]
+# println(data)
+
+dataset = CSV.read("data.csv", DataFrame)
+data = rotl90(Matrix(dataset))
 
 function cluster_centers(partition_table, data)  #  prototype
     
@@ -23,7 +27,7 @@ function cluster_centers(partition_table, data)  #  prototype
             v[partition_table_row, data_row] = summed_nominator/summed_denominator
         end     
     end
-    display(v) 
+    #display(v) 
     return rotr90(v)
 end
 
@@ -39,29 +43,29 @@ end
 
 function c_means(data, number_of_clusters)
     J = []
-    ϵ = 1e-5
+    ϵ = 1e-20
     Uₕ = zeros(Int, number_of_clusters, size(data,2))
-    show_partition_matrix(Uₕ)
+    #show_partition_matrix(Uₕ)
     Uₕ = init_random(Uₕ)
     U_prev = Uₕ
-    show_partition_matrix(Uₕ)
+    #show_partition_matrix(Uₕ)
     Vₕ = cluster_centers(Uₕ, data)
     d = euclidian_distances(data, Vₕ)
-    println(d)
+    #println(d)
     append!(J, [criterion_function(Uₕ, d)])
-    println(J)
+    #println(J)
     Uₕ = update_partition_table(Uₕ, d)
     while frobenius_norm(Uₕ, U_prev) > ϵ
         Vₕ = cluster_centers(Uₕ, data)
         d = euclidian_distances(data, Vₕ)
-        println(d)
+        #println(d)
         
         Uₕ = update_partition_table(Uₕ, d)
         append!(J, [criterion_function(Uₕ, d)])
-        println(J)
+        #println(J)
     end
     Vₕ = cluster_centers(Uₕ, data)
-    println(Uₕ, "\n", Vₕ, "\n", d)
+    #println(Uₕ, "\n", Vₕ, "\n", d)
 
     scatter(data[1,:], data[2,:], legend=false)
     scatter!(Vₕ[1, :], Vₕ[2, :])
@@ -79,7 +83,8 @@ function frobenius_norm(m1::Matrix{Int64}, m2::Matrix{Int64})
     return sqrt(summed_first) - sqrt(summed_second)
 end
 
-function euclidian_distances(v1::Matrix{Float64}, v2::Matrix{Float64})
+
+function euclidian_distances(v1::Matrix{Int64}, v2::Matrix{Float64})
     v1 = [v1[i, :] for i in 1:size(v1,1)]
     v2 = [v2[i, :] for i in 1:size(v2,1)]
     s = size(v1,1)
@@ -96,7 +101,29 @@ function euclidian_distances(v1::Matrix{Float64}, v2::Matrix{Float64})
         end
     end
     # println(length(v1[1]))
-    display(d)
+    #display(d)
+    return d'
+
+end
+
+function euclidian_distances(v1::Matrix{Any}, v2::Matrix{Any})
+    v1 = [v1[i, :] for i in 1:size(v1,1)]
+    v2 = [v2[i, :] for i in 1:size(v2,1)]
+    s = size(v1,1)
+    d = zeros((length(v1[1]),length(v2[2])))
+    
+    for j in 1:length(v2[2])
+        for k in 1:length(v1[1])
+            summed = 0
+            for i in 1:s
+                # println(v1[1], " ", v1[2], " ", v2[1], " ", v2[2])
+                summed += (v1[i][k] - v2[i][j])^2
+            end
+            d[ k, j] = summed
+        end
+    end
+    # println(length(v1[1]))
+    #display(d)
     return d'
 
 end
@@ -134,7 +161,7 @@ function update_partition_table(partition_table, distances)
             end
         end
     end
-    display(partition_table)
+    #display(partition_table)
     return partition_table
 end
 
@@ -214,7 +241,7 @@ function test_table_update()
     # Uₕ = init_random(Uₕ)
     # show_partition_matrix(Uₕ)
     Vₕ = cluster_centers(Uₕ, data)
-    display(Vₕ)
+    # display(Vₕ)
     d = euclidian_distances(data, Vₕ)
     update_partition_table(Uₕ, d)
     scatter(data[1,:], data[2,:], legend=false)
@@ -227,5 +254,5 @@ end
 # test_criterion_function()
 # test_table_update()
 
-c_means(data,2)
+c_means(data,15)
 
