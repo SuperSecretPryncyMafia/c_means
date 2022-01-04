@@ -48,7 +48,6 @@ function fuzzy_c_means(data, number_of_clusters, m, ϵ=10)
     scatter!(V[1, :], V[2, :])
 end
 
-
 function init_partition_matrix(partition_table)
     height = length(partition_table[:, 1])
     len = length(partition_table[1, :])
@@ -102,12 +101,11 @@ function cluster_centers(partition_table, data)  #  prototype
             v[partition_table_row, data_row] = summed_nominator/summed_denominator
         end     
     end
-    # display(v) 
+
     return rotr90(v)
 end
 
-
-function cluster_centers(partition_table, data, m)  #  prototype
+function cluster_centers(partition_table, data, m) 
     size_of_data = size(data)
     v = zeros(size(partition_table, 1), size_of_data[1])   
 
@@ -123,10 +121,8 @@ function cluster_centers(partition_table, data, m)  #  prototype
             v[partition_table_row, data_row] = summed_nominator/summed_denominator
         end     
     end
-    # display(v) 
     return rotr90(v)
 end
-
 
 function frobenius_norm(m1::Matrix{Float64}, m2::Matrix{Float64})
     summed_first = 0
@@ -150,16 +146,13 @@ function euclidian_distances(v1::Matrix{Float64}, v2)
         for k in 1:length(v1[1])
             summed = 0
             for i in 1:s
-                # println(v1[1], " ", v1[2], " ", v2[1], " ", v2[2])
                 summed += (v1[i][k] - v2[i][j])^2
             end
             d[ k, j] = sqrt(summed)
         end
     end
-    # println(length(v1[1]))
-    # display(d)
-    return d'
 
+    return d'
 end
 
 function euclidian_distances_sqrd(v1::Matrix{Float64}, v2::Matrix{Float64})
@@ -172,16 +165,13 @@ function euclidian_distances_sqrd(v1::Matrix{Float64}, v2::Matrix{Float64})
         for k in 1:length(v1[1])
             summed = 0
             for i in 1:s
-                # println(v1[1], " ", v1[2], " ", v2[1], " ", v2[2])
                 summed += (v1[i][k] - v2[i][j])^2
             end
             d[ k, j] = summed
         end
     end
-    # println(length(v1[1]))
-    # display(d)
-    return d'
 
+    return d'
 end
 
 function update_partition_table(partition_table, distances, m)
@@ -205,15 +195,9 @@ function update_partition_table(partition_table, distances, m)
                 partition_table[row, col] = (distances[col, row]^(2/(1-m)))/dist_sum
             end
         end
-        # data = distances[row, :]
-        # println(data, "\t", distances[k, i])
-        # println(minimum(data), "\t==\t", data, "\t= ", minimum(data) == (distances[k, i]))
-        # if minimum(data) == distances[row, col]
-        #     partition_table[row, col] = 1
-        #     break
-        # end
+
     end
-    # display(partition_table)
+
     return partition_table
 end
 
